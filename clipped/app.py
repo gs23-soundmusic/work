@@ -13,7 +13,7 @@ QUARTER_AMP = MAX_AMP // 4
 t = np.linspace(0, NSECS, num=NSAMPLES, endpoint=False, dtype=np.float32)
 
 sine_wave = np.sin(2 * np.pi * FREQUENCY * t) * QUARTER_AMP
-since_wave = sine_wave.astype(np.int16)
+sine_wave = sine_wave.astype(np.int16)
 wavfile.write('sine.wav', SAMPLE_RATE, sine_wave)
 
 clipped_wave = HALF_AMP * np.sin(2 * np.pi * FREQUENCY * t)
