@@ -20,3 +20,6 @@ clipped_wave = HALF_AMP * np.sin(2 * np.pi * FREQUENCY * t)
 clipped_wave = np.clip(clipped_wave, -QUARTER_AMP, QUARTER_AMP)
 clipped_wave = clipped_wave.astype(np.int16)
 wavfile.write('clipped.wav', SAMPLE_RATE, clipped_wave)
+
+sd.play(clipped_wave, SAMPLE_RATE)
+sd.wait()
