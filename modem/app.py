@@ -49,12 +49,13 @@ def byte_extractor(samples, frequency1, frequency2):
 
 
 
-wave = wavfile.read('message.wav')
+file = 'message.wav'
+wave = wavfile.read(file)
 text = []
 for i in range(0, wave[1].shape[0], BYTE_SIZE):
     bytes = byte_extractor(wave[1][i:i+BYTE_SIZE], 2025, 2225)
     text.append(chr(bytes))
 
 message_output = ''.join(text)
-with open('message.txt', 'w') as f:
+with open(file.split('.')[0] + '.txt', 'w') as f:
     f.write(message_output)
