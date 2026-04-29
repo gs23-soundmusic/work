@@ -4,7 +4,7 @@ This tool decodes text messages embedded in audio using the Bell 103 modem FSK p
 
 The script reads `message.wav`, extracts all bytes, and writes the decoded text to `message.txt`.
 
-The file `300bps.txt`, contains a partially decoded message from "300bps N, 8, 1/Terminal Mode or ASCII Download". 
+The file `300bps.txt`, contains a partially decoded message from "300bps N, 8, 1/Terminal Mode or ASCII Download". This portion was not fully completed. The issue arises from a bit error in the wav file, so further santization is required for a full message capture.
 
 Dependencies: numpy, scipy
 
