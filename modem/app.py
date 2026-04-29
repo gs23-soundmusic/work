@@ -63,13 +63,11 @@ def find_start_bit(samples, frequency1, frequency2):
                 stop_bit = bit_extractor(samples[index + BYTE_SIZE * n + BIT_SIZE * 9:index + BYTE_SIZE * n + BIT_SIZE * 10], frequency1, frequency2)
 
                 if start_bit == 0 and stop_bit == 1:
-                    #print('01', end='')
                     start_found += 1
                 else:
                     start_found = 1
                     index += BIT_SIZE
                     break
-            print(' ', end='')
 
         else:
             index += BIT_SIZE
@@ -84,7 +82,7 @@ text = []
 
 if len(wave[1].shape) == 1:
     index = find_start_bit(wave[1], 2025, 2225)
-    #print("start bit at:", index)
+    print("start bit at:", index)
     for i in range(index, wave[1].shape[0], BYTE_SIZE):
         bytes = byte_extractor(wave[1][i:i+BYTE_SIZE], 2025, 2225)
         text.append(chr(bytes))
@@ -98,10 +96,9 @@ if len(wave[1].shape) > 1 and wave[1].shape[1] == 2:
     right = wave[1][:, 1]
     wave = np.array([((left[n] + right[n]) // 2) for n in range(wave[1].shape[0])])
 
-    index = find_start_bit(wave, 2025, 2225)
-    #print("start bit at:", index)
-
     try:
+        index = find_start_bit(wave, 2025, 2225)
+        print("start bit at:", index)
         for i in range(index, wave.shape[0], BYTE_SIZE):
             bytes = byte_extractor(wave[i:i+BYTE_SIZE], 2025, 2225)
             text.append(chr(bytes))
