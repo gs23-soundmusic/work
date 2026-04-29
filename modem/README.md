@@ -1,3 +1,5 @@
+Contains work done by Gabriel Santana Soto for the modem assignment.
+
 This tool decodes text messages embedded in audio using the Bell 103 modem FSK protocol. It analyzes each bit by comparing tone power at 2025 Hz and 2225 Hz, reconstructs bytes from 160‑sample bit windows, and outputs the recovered message as plain text. In addition, it checks for mono or stereo audio, before attempting message extraction.
 
 The script reads `message.wav`, extracts all bytes, and writes the decoded text to `message.txt`.
