@@ -22,7 +22,7 @@ song_structure_choice = random.choice(SONG_STRUCTURES)
 
 
 #Line Structure: Each "line" of our song will be a four-chord loop (one chord per measure):
-LINE_STRUCTURES = ["1425", "1625", "1344", "1525", "1645", "4164", "1561", "1441", "4511", "6415"]
+LINE_STRUCTURES = [[1,4,-2,5], [1,-6,-2,5], [1,-3,4,-4], [1,5,-2,5], [1,-6,4,5], [4,1,-6,4], [1,5,-6,1], [1,4,-4,1], [4,5,1,1], [-6,5,1,5]]
 line_structure_choice= random.sample(LINE_STRUCTURES, len(set(song_structure_choice.replace("/", ""))))
 
 
@@ -30,12 +30,18 @@ line_structure_choice= random.sample(LINE_STRUCTURES, len(set(song_structure_cho
 #Key: Pick a random key (base scale note) in the range A3-A4 inclusive in frequency.
 #Major scale of A is A3(220 Hz), B3(246.94 Hz), C#4(277.18 Hz), D4(293.66 Hz), E4(329.63 Hz), F#4(369.99 Hz), and G#4(415.30 Hz). Major chord of A is A3(220 Hz), C#4(277.18 Hz), and E4(329.63 Hz).
 #Major scale of A#3 is A#3(233.08 Hz), C4(261.63 Hz), D#4(311.13 Hz), F4(349.23 Hz), F#4(369.99 Hz), and G#4(415.30 Hz). Major chord of A#3 is A#3(233.08 Hz), D#4(311.13 Hz), and F#4(369.99 Hz).
-KEYS =            ["A3","A#3",  "B3",   "C4",   "C#4",  "D4",   "D#4",  "E4",   "F4",   "F#4",  "G4",   "G#4",  "A4",   "A#4",  "B4",   "C5",   "C#5",  "D5",   "D#5",  "E5",   "F5",   "F#5",  "G5",   "G#5"]
-KEYS_FREQUENCIES = [220, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61]
+#KEYS =            ["A3","A#3",  "B3",   "C4",   "C#4",  "D4",   "D#4",  "E4",   "F4",   "F#4",  "G4",   "G#4",  "A4",   "A#4",  "B4",   "C5",   "C#5",  "D5",   "D#5",  "E5",   "F5",   "F#5",  "G5",   "G#5"]
+#KEYS_FREQUENCIES = [220, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61]
+def semitone_up(frequency, up_number):
+    for i in range(up_number):
+        frequency = frequency * (2 ** (1.0/12.0))
+    return frequency
+base_frequency = 220 #A3
 valid_starting_key = [0, 2, 3, 5, 7, 8, 10, 12]
 major_scale = [0, 2, 4, 5, 7, 9, 11]
 major_chord = [0, 4, 7]
-starting_key = random.choice(valid_starting_key)
+starting_key = semitone_up(base_frequency, random.choice(valid_starting_key))
+#starting_key = random.choice(valid_starting_key)
 
 
 
@@ -46,13 +52,22 @@ tempo = 160
 
 #Melody: Pick a note from the current chord with probability 0.8, else another note from the major scale.
 def pick_melody_note(key, scale):
-    index = KEYS_FREQUENCIES.index(key)
-    octave = KEYS_FREQUENCIES[index:index+13]
+    minor = False
+    if scale < 0:
+        minor = True
+        scale = -scale
 
     if random.random() < 0.8:
-        return octave[random.choice(major_chord) % len(octave)]
+        x = random.choice(major_chord)
+        chord_choice = (major_scale.index(x) + scale - 1) % len(major_scale)
+        if x == 4 and minor:
+            chord_choice -= 1
+            if chord_choice < 0:
+                chord_choice += 7
+        return semitone_up(key, major_scale[chord_choice])
     else:
-        return octave[random.choice(major_scale) % len(octave)]
+        chord_choice = (random.randint(0, len(major_scale)) + scale - 1) % len(major_scale)
+        return semitone_up(key, major_scale[chord_choice])
 
 
 
@@ -64,22 +79,6 @@ def sawtooth_wave(frequency):
 
 
 
-song = None
-print(song_structure_choice, line_structure_choice)
-print("starting key:", KEYS[starting_key])
-
-for chord in song_structure_choice.replace("/", ""): #6 lines
-    l = line_structure_choice[int(chord) - 1]
-    for c in l: #4 chords per line
-        for i in range(8): #8 notes per measure
-            note = pick_melody_note(KEYS_FREQUENCIES[starting_key], int(c))
-
-            if song is None:
-                song = sawtooth_wave(note)
-            else:
-                song = np.concatenate((song, sawtooth_wave(note)))
-    
-
 output = None
 try:
     opts, args = getopt.getopt(sys.argv[1:], "o:", ["output="])
@@ -89,9 +88,31 @@ try:
                 output = '.'.split(arg)[0]
             else:
                 output = arg
-            wavfile.write(f'{output}.wav', SAMPLE_RATE, song)
+
+    song = None
+    print(song_structure_choice, line_structure_choice)
+    print("starting key:", starting_key)
+
+    for chord in song_structure_choice.replace("/", ""): #6 lines
+        l = line_structure_choice[int(chord) - 1]
+        for c in l: #4 chords per line
+            for i in range(8): #8 notes per measure
+                note = pick_melody_note(starting_key, c)
+
+                if song is None:
+                    song = sawtooth_wave(note)
+                else:
+                    song = np.concatenate((song, sawtooth_wave(note)))
+
+    if output is None:
+        sd.play(song, SAMPLE_RATE)
+        sd.wait()
+    else:
+        wavfile.write(f'{output}.wav', SAMPLE_RATE, song)
+
+
 
 except getopt.GetoptError as err:
     print(err)
-    print("Usage: app.py -o <file> -v")
+    print("Usage: app.py -o <file>")
     sys.exit(2)
