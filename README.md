@@ -6,3 +6,6 @@ This python project will generate two wav files, `sine.wav` and `clipped.wav`, a
 
 ## Modem
 This tool decodes text messages embedded in audio using the Bell 103 modem FSK protocol. It analyzes each bit by comparing tone power at 2025 Hz and 2225 Hz, reconstructs bytes from 160‑sample bit windows, and outputs the recovered message as plain text. The script reads message.wav, extracts all bytes, and writes the decoded text to message.txt.
+
+## Aleatoric
+Simple aleatoric music generator. This script randomly selects a song structure, a four-chord line progression, and a starting key in the range A3–A4. It generates a melody of eighth notes where each note has an 80% chance of coming from the current chord and a 20% chance of coming from the major scale.
