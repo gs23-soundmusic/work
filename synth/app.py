@@ -34,7 +34,6 @@ For Python, still recommend sounddevice for playing on the speaker. Probably use
 '''
 import numpy as np
 import sounddevice as sd
-from scipy.signal import envelope
 from mido import MidiFile
 import time
 
@@ -63,16 +62,22 @@ def ar_envelope(wave, attack, release):
 
 def midi_events(in_midi):
     for msg in in_midi:
-        print(msg)
-        if msg.type == 'note_on' and msg.time > 0:
+        if msg.time > 0:
+            print(msg)
+        if msg.type == 'note_off' and msg.time > 0:
             wave = sawtooth_wave(msg.note, msg.time)
             envelope = ar_envelope(wave, 0.01, 0.01)
             sd.play(wave * envelope, SAMPLE_RATE)
+            time.sleep(msg.time)
 
-        elif msg.type == 'note_off':
+        elif msg.type == 'note_on' and msg.time > 0:
+            time.sleep(msg.time)
             sd.stop()
+    
+        elif msg.type == 'note_on' or msg.type == 'note_off' and msg.velocity == 0:
+            sd.stop()
+        
 
 
-
-input_midi = MidiFile("input.mid")
+input_midi = MidiFile('input.mid')
 midi_events(input_midi)
