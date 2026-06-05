@@ -34,27 +34,29 @@ For Python, still recommend sounddevice for playing on the speaker. Probably use
 '''
 import numpy as np
 import sounddevice as sd
-import scipy.io.wavfile as wav
+from scipy.signal import envelope
 from mido import MidiFile
+import time
 
 
 
 SAMPLE_RATE = 48000
 WAVE_SCALE = 0.708
+DURATION = 0.01
 
 
 
-def sawtooth_wave(frequency, amplitdue=WAVE_SCALE, duration=1, sample_rate=SAMPLE_RATE):
-    t = np.linspace(0, duration, int(sample_rate * duration))
-    return amplitdue * (2 * (t % (1 / frequency)) - 1)
+def sawtooth_wave(note, duration):
+    frequency = 440 * (2 ** ((note - 69) / 12))
+    t = np.linspace(0, duration, int(SAMPLE_RATE * duration))
+    return WAVE_SCALE * (2 * (t % (1 / frequency)) - 1)
 
 
 
 def ar_envelope(wave, attack, release):
-    envelope = np.zeros_like(wave)
-    envelope[:attack] = np.linspace(0, 1, int(SAMPLE_RATE * attack))
-    envelope[attack:] = np.linspace(1, 0, int(SAMPLE_RATE * release))
-
+    envelope = np.ones_like(wave, dtype=float)
+    envelope[:int(attack * SAMPLE_RATE)] = np.linspace(0, 1, int(SAMPLE_RATE * attack))
+    envelope[int(-release * SAMPLE_RATE):] = np.linspace(1, 0, int(SAMPLE_RATE * release))
     return envelope * wave
 
 
@@ -62,8 +64,11 @@ def ar_envelope(wave, attack, release):
 def midi_events(in_midi):
     for msg in in_midi:
         print(msg)
-        if msg.type == 'note_on':
-            sd.play(sawtooth_wave(msg.note))
+        if msg.type == 'note_on' and msg.time > 0:
+            wave = sawtooth_wave(msg.note, msg.time)
+            envelope = ar_envelope(wave, 0.01, 0.01)
+            sd.play(wave * envelope, SAMPLE_RATE)
+
         elif msg.type == 'note_off':
             sd.stop()
 
