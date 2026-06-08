@@ -41,9 +41,6 @@ def ar_envelope(wave, attack=DURATION, release=DURATION):
 def midi_events(in_midi, wave_type):
     volume = 1
     for msg in in_midi:
-        if msg.time > 0:
-            pass
-            #print(msg)
         if msg.type == 'note_off' and msg.time > 0:
             wave = waveforms(msg.note, msg.time, wave_type, volume)
             envelope = ar_envelope(wave)
@@ -56,9 +53,6 @@ def midi_events(in_midi, wave_type):
         #MIDI KEY ON Velocity: Set the volume of the played note according to the KEY ON velocity.
         elif msg.type == 'note_on' and msg.velocity > 0:
             volume = msg.velocity / 127
-
-        elif msg.type == 'note_on' or msg.type == 'note_off' and msg.velocity == 0:
-            pass
 
 
 
